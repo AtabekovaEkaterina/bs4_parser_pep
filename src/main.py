@@ -100,12 +100,14 @@ def download(session):
 def pep(session):
     session = requests_cache.CachedSession()
     response = get_response(session, PEP_URL)
+    if response is None:
+        return
     soup = BeautifulSoup(response.text, features='lxml')
     section = find_tag(soup, 'section', {'id': 'numerical-index'})
     table_body = find_tag(section, 'tbody')
     table_rows = table_body.find_all('tr')
 
-    count_status = {}
+    count_of_each_status = {}
     for row in tqdm(table_rows):
         type_and_status = row.find('abbr')
         status_in_table = EXPECTED_STATUS[type_and_status.text[1:]]
@@ -122,10 +124,10 @@ def pep(session):
                 status_in_page_pip = field.find_next_sibling('dd').text
                 break
 
-        if status_in_page_pip in count_status:
-            count_status[status_in_page_pip] += 1
+        if status_in_page_pip in count_of_each_status:
+            count_of_each_status[status_in_page_pip] += 1
         else:
-            count_status[status_in_page_pip] = 1
+            count_of_each_status[status_in_page_pip] = 1
 
         if status_in_page_pip not in status_in_table:
             info_msg = (
@@ -136,9 +138,9 @@ def pep(session):
             )
             logging.info(info_msg)
 
-    count_status['Total'] = sum(count_status.values())
+    count_of_each_status['Total'] = sum(count_of_each_status.values())
     results = [('Status', 'Count')]
-    for status, count in count_status.items():
+    for status, count in count_of_each_status.items():
         results.append(
             (status, count)
         )

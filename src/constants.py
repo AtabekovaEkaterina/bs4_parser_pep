@@ -16,3 +16,5 @@ EXPECTED_STATUS = {
     'W': ('Withdrawn',),
     '': ('Draft', 'Active'),
 }
+MODE_FOR_OUTPUT_TO_TABLE = 'pretty'
+MODE_FOR_OUTPUT_TO_FILE = 'file'
