@@ -1,5 +1,6 @@
 import logging
 import re
+from collections import defaultdict
 from urllib.parse import urljoin
 
 import requests_cache
@@ -107,7 +108,7 @@ def pep(session):
     table_body = find_tag(section, 'tbody')
     table_rows = table_body.find_all('tr')
 
-    count_of_each_status = {}
+    count_of_statuses = defaultdict(int)
     for row in tqdm(table_rows):
         type_and_status = row.find('abbr')
         status_in_table = EXPECTED_STATUS[type_and_status.text[1:]]
@@ -123,11 +124,7 @@ def pep(session):
             if 'Status' in field.text:
                 status_in_page_pip = field.find_next_sibling('dd').text
                 break
-
-        if status_in_page_pip in count_of_each_status:
-            count_of_each_status[status_in_page_pip] += 1
-        else:
-            count_of_each_status[status_in_page_pip] = 1
+        count_of_statuses[status_in_page_pip] += 1
 
         if status_in_page_pip not in status_in_table:
             info_msg = (
@@ -138,9 +135,9 @@ def pep(session):
             )
             logging.info(info_msg)
 
-    count_of_each_status['Total'] = sum(count_of_each_status.values())
+    count_of_statuses['Total'] = sum(count_of_statuses.values())
     results = [('Status', 'Count')]
-    for status, count in count_of_each_status.items():
+    for status, count in count_of_statuses.items():
         results.append(
             (status, count)
         )
